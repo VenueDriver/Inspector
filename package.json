@@ -1,0 +1,23 @@
+{
+  "name": "hakkasan-inspector",
+  "version": "1.0.0",
+  "description": "Automated verification tool for the Hakkasan Group's web technical requirements.",
+  "main": "inspect.js",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "jsdom": "9.5.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VenueDriver/Inspector.git"
+  },
+  "author": "Ryan Alyn Porter",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VenueDriver/Inspector/issues"
+  },
+  "homepage": "https://github.com/VenueDriver/Inspector#readme"
+}
