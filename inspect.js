@@ -3,9 +3,37 @@
 
 var jsdom = require('jsdom');
 var colors = require('colors');
+var w3cjs = require('w3cjs');
 
 var assertions = 0;
 var passed = 0;
+
+// Run site through W3C HTML Validator API
+var results = w3cjs.validate({
+    file: 'http://staging.aokivegas.com',  // file can either be a local file or a remote file
+    //input: '<html>...</html>',
+    //input: myBuffer,
+    output: 'json', // Defaults to 'json', other option includes html
+    //proxy: 'http://proxy:8080', // Default to null
+    callback: function(res) {
+      console.log("Beginning HTML Validation...");
+      var errors = 0;
+      var warnings = 0;
+      for (i=0; i < res.messages.length; i++) {
+        if ((res.messages[i].type === 'error') && (res.messages[i].subType !== 'warning')) {
+          console.log(res.messages[i].type + ' : ' + res.messages[i].message);
+          errors++;
+        } else if ((res.messages[i].type === 'error') && (res.messages[i].subType === 'warning')) {
+          console.log(res.messages[i].subType + ' : ' + res.messages[i].message);
+          warnings++;
+        }
+      };
+      console.log(errors + ' Errors!');
+      console.log(warnings + ' Warnings!');
+      assert(errors === 0,
+        'W3C Validator should return 0 errors');
+    }
+});
 
 jsdom.env({
   url: 'http://tiestovegas.com',
@@ -82,6 +110,8 @@ jsdom.env({
       'Page has og:image content');
     console.log(window.$('meta[property="og:image"]').attr('content'));
 
+    // Google Tag Manager required.
+    
 
 
 
