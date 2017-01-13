@@ -8,33 +8,6 @@ var w3cjs = require('w3cjs');
 var assertions = 0;
 var passed = 0;
 
-// Run site through W3C HTML Validator API
-var results = w3cjs.validate({
-    file: 'http://staging.aokivegas.com',  // file can either be a local file or a remote file
-    //input: '<html>...</html>',
-    //input: myBuffer,
-    output: 'json', // Defaults to 'json', other option includes html
-    //proxy: 'http://proxy:8080', // Default to null
-    callback: function(res) {
-      console.log("Beginning HTML Validation...");
-      var errors = 0;
-      var warnings = 0;
-      for (i=0; i < res.messages.length; i++) {
-        if ((res.messages[i].type === 'error') && (res.messages[i].subType !== 'warning')) {
-          console.log(res.messages[i].type + ' : ' + res.messages[i].message);
-          errors++;
-        } else if ((res.messages[i].type === 'error') && (res.messages[i].subType === 'warning')) {
-          console.log(res.messages[i].subType + ' : ' + res.messages[i].message);
-          warnings++;
-        }
-      };
-      console.log(errors + ' Errors!');
-      console.log(warnings + ' Warnings!');
-      assert(errors === 0,
-        'W3C Validator should return 0 errors');
-    }
-});
-
 jsdom.env({
   url: 'http://tiestovegas.com',
   scripts: ['http://code.jquery.com/jquery.js'],
@@ -74,6 +47,7 @@ jsdom.env({
     });
 
     // Twitter card tags required.
+    console.log("Checking for Twitter Card tags...");
     assert(window.$('meta[name="twitter:card"]').attr('content').length >= 1,
       'Page has twitter:card content');
     console.log(window.$('meta[name="twitter:card"]').attr('content'));
@@ -94,6 +68,7 @@ jsdom.env({
     console.log(window.$('meta[name="twitter:image"]').attr('content'));
 
     // Facebook Open Graph tags required.
+    console.log("Checking for Facebook Open Graph tags...");
     assert(window.$('meta[property="og:url"]').attr('content').length >= 1,
       'Page has og:url content');
     console.log(window.$('meta[property="og:url"]').attr('content'));
@@ -111,14 +86,45 @@ jsdom.env({
     console.log(window.$('meta[property="og:image"]').attr('content'));
 
     // Google Tag Manager required.
+    console.log("Checking for Google Tag Manager script tags...");
+    var GTMscript = window.$('head > script:contains("//www.googletagmanager.com/gtm.js?id=")');
+    assert(GTMscript.length === 1,
+      'Page has a Google Tag Manager <script> in the <head>');
+    console.log(GTMscript.html());
+    var GTMnoscript = window.$('body > noscript:contains("//www.googletagmanager.com/ns.html?id=")');
+    assert(GTMnoscript.length === 1,
+      'Page has a Google Tag Manager <noscript> in the <body>');
+    console.log(GTMnoscript.html());
     
-
-
-
-
+    // Log Assertions vs. Passed stats
     stats();
   }
-})
+});
+
+// Run site through W3C HTML Validator API
+var results = w3cjs.validate({
+  file: 'http://tiestovegas.com',
+  output: 'json', // Defaults to 'json', other option includes html
+  callback: function(res) {
+    console.log("Beginning HTML Validation...");
+    var errors = 0;
+    var warnings = 0;
+    for (i=0; i < res.messages.length; i++) {
+      if ((res.messages[i].type === 'error') && (res.messages[i].subType !== 'warning')) {
+        console.log(res.messages[i].type + ' : ' + res.messages[i].message);
+        errors++;
+      } else if ((res.messages[i].type === 'info') && (res.messages[i].subType === 'warning')) {
+        console.log(res.messages[i].subType + ' : ' + res.messages[i].message);
+        warnings++;
+      }
+    };
+    console.log(errors + ' Errors!');
+    console.log(warnings + ' Warnings!');
+    assert(errors === 0,
+      'W3C Validator should return 0 errors');
+    //console.log(res);
+  }
+});
 
 function assert(condition, message) {
     assertions++;
