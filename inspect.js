@@ -8,15 +8,17 @@ const yaml = require('js-yaml');
 const fs = require('fs');
 
 ////////////////////////////////////////////////
-// Trying to read in url from website.yml 
+// Trying to read in url from website.yml
 // and set const url to its value to be
 // ued in jsdom() and w3cjs.validate() below
 ////////////////////////////////////////////////
 
+var inspection_url = '';
+
 try {
   const website = yaml.safeLoad(fs.readFileSync('website.yml', 'utf8'));
-  const url = website.url;
-  console.log("Scanning: " + url + "......");
+  inspection_url = website.url.toString();
+  console.log("Scanning: " + inspection_url + "......");
 } catch (e) {
   console.log(e);
 }
@@ -25,9 +27,14 @@ var assertions = 0;
 var passed = 0;
 
 jsdom.env({
-  url: 'http://tiestovegas.com',    // << want to insert url here
+  url: inspection_url,
   scripts: ['http://code.jquery.com/jquery.js'],
-  done: function (err, window) {
+  done: function (errors, window) {
+
+    if(errors){
+      console.log("ERROR: " + errors);
+      return;
+    }
 
     // A non-zero length page title is required.
     assert(window.$('title').length === 1,
@@ -48,7 +55,7 @@ jsdom.env({
 
     // Multiple favicons are required.
     var favicons = window.$('link[rel="icon"]');
-    assert(favicons.length >= 1, 
+    assert(favicons.length >= 1,
       'Page has more than 1 favicon');
     favicons.each(function(i) {
       console.log((window.$('link[rel="icon"]')[i].getAttribute('sizes')));
@@ -56,7 +63,7 @@ jsdom.env({
 
     // Multiple apple-touch-icons are required.
     var appleicons = window.$('link[rel="apple-touch-icon"]');
-    assert(appleicons.length >= 1, 
+    assert(appleicons.length >= 1,
       'Page has more than 1 apple-touch-icon');
     appleicons.each(function(i) {
       console.log((window.$('link[rel="apple-touch-icon"]')[i].getAttribute('sizes')));
@@ -111,7 +118,7 @@ jsdom.env({
     assert(gtmNoscript.length === 1,
       'Page has a Google Tag Manager <noscript> in the <body>');
     console.log(gtmNoscript.html());
-    
+
     // Marketo form required
     // console.log("Checking for Marketo form...");
     // var marketoForm = window.$('body > script[src="//app-ab06.marketo.com/js/forms2/js/forms2.min.js"]');
