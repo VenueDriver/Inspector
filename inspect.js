@@ -1,15 +1,31 @@
 // Validator for the Hakkasan Group's Web Technical Requirements SOP:
 // https://hakkasan.atlassian.net/wiki/display/ENG/SOP%3A+Web+Technical+Requirements
 
-var jsdom = require('jsdom');
-var colors = require('colors');
-var w3cjs = require('w3cjs');
+const jsdom = require('jsdom');
+const colors = require('colors');
+const w3cjs = require('w3cjs');
+const yaml = require('js-yaml');
+const fs = require('fs');
+
+////////////////////////////////////////////////
+// Trying to read in url from website.yml 
+// and set const url to its value to be
+// ued in jsdom() and w3cjs.validate() below
+////////////////////////////////////////////////
+
+try {
+  const website = yaml.safeLoad(fs.readFileSync('website.yml', 'utf8'));
+  const url = website.url;
+  console.log("Scanning: " + url + "......");
+} catch (e) {
+  console.log(e);
+}
 
 var assertions = 0;
 var passed = 0;
 
 jsdom.env({
-  url: 'http://tiestovegas.com',
+  url: 'http://tiestovegas.com',    // << want to insert url here
   scripts: ['http://code.jquery.com/jquery.js'],
   done: function (err, window) {
 
@@ -87,15 +103,22 @@ jsdom.env({
 
     // Google Tag Manager required.
     console.log("Checking for Google Tag Manager script tags...");
-    var GTMscript = window.$('head > script:contains("//www.googletagmanager.com/gtm.js?id=")');
-    assert(GTMscript.length === 1,
+    var gtmScript = window.$('head > script:contains("//www.googletagmanager.com/gtm.js?id=")');
+    assert(gtmScript.length === 1,
       'Page has a Google Tag Manager <script> in the <head>');
-    console.log(GTMscript.html());
-    var GTMnoscript = window.$('body > noscript:contains("//www.googletagmanager.com/ns.html?id=")');
-    assert(GTMnoscript.length === 1,
+    console.log(gtmScript.html());
+    var gtmNoscript = window.$('body > noscript:contains("//www.googletagmanager.com/ns.html?id=")');
+    assert(gtmNoscript.length === 1,
       'Page has a Google Tag Manager <noscript> in the <body>');
-    console.log(GTMnoscript.html());
+    console.log(gtmNoscript.html());
     
+    // Marketo form required
+    // console.log("Checking for Marketo form...");
+    // var marketoForm = window.$('body > script[src="//app-ab06.marketo.com/js/forms2/js/forms2.min.js"]');
+    // assert(marketoForm.length === 1,
+    //   'Page has a Google Tag Manager <noscript> in the <body>');
+    // console.log(marketoForm);
+
     // Log Assertions vs. Passed stats
     stats();
   }
@@ -106,7 +129,7 @@ var results = w3cjs.validate({
   file: 'http://tiestovegas.com',
   output: 'json', // Defaults to 'json', other option includes html
   callback: function(res) {
-    console.log("Beginning HTML Validation...");
+    console.log("Beginning HTML Validation on ...");
     var errors = 0;
     var warnings = 0;
     for (i=0; i < res.messages.length; i++) {
