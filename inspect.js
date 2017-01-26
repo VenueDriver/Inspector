@@ -19,7 +19,7 @@ try {
 
 // Loop over urlList and run each url through scrape() and validateHTML()
 for (var url in urlList) {   
-  scrape(urlList[url].toString());
+  scrape(urlList[url].toString());  
   validateHTML(urlList[url].toString());
 }
 
