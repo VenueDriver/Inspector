@@ -1,11 +1,13 @@
 // Validator for the Hakkasan Group's Web Technical Requirements SOP:
 // https://hakkasan.atlassian.net/wiki/display/ENG/SOP%3A+Web+Technical+Requirements
 
+var async = require("async");
 const jsdom = require('jsdom');
 const colors = require('colors');
 const w3cjs = require('w3cjs');
 const yaml = require('js-yaml');
 const fs = require('fs');
+var util = require('util');
 
 var failure = false;
 
@@ -14,27 +16,19 @@ try {
   // var websiteList = yaml.safeLoad(fs.readFileSync('website.yml', 'utf8'));     // yaml file with only 1 url
   var websiteList = yaml.safeLoad(fs.readFileSync('website2.yml', 'utf8'));     // yaml file with multiple urls
   var urlList = websiteList.url;
-  console.log("Scanning: " + urlList + "......");
+  console.log("Scanning: " + urlList.join(", ") + "...\n");
 } catch (e) {
   console.log(e);
 }
 
-// Send the urlList to functions that will use
-// asynchrounous recursion to process them.
-inspect(urlList);
-// validateHTML(urlList);
+async.until(
+  function() {
+    return !urlList.length
+  },
+  function(callback) {
+    var url = urlList.shift().toString();
 
-function inspect(urlList) {
-
-  // Clone the array because we're going to damage it.
-  // https://davidwalsh.name/javascript-clone-array
-  var inspectURLList = urlList.slice(0);
-
-  var inspectURL = function() {
-
-    if (!inspectURLList.length) endWithStatusCode();
-
-    var url = inspectURLList.shift().toString();
+    console.log("Inspecting URL: " + url + '\n');
 
     jsdom.env({
       url: url,
@@ -45,8 +39,6 @@ function inspect(urlList) {
           console.log(err);
           return;
         }
-
-        console.log("Inspecting " + url + "...");
 
         // A non-zero length page title is required.
         assert(window.$('title').length === 1,
@@ -82,7 +74,7 @@ function inspect(urlList) {
         });
 
         // Twitter card tags required.
-        console.log("Checking for Twitter Card tags...");
+        console.log("\nChecking for Twitter Card tags...");
         assert(window.$('meta[name="twitter:card"]').attr('content').length >= 1,
           'Page has twitter:card content');
         console.log(window.$('meta[name="twitter:card"]').attr('content'));
@@ -103,7 +95,7 @@ function inspect(urlList) {
         console.log(window.$('meta[name="twitter:image"]').attr('content'));
 
         // Facebook Open Graph tags required.
-        console.log("Checking for Facebook Open Graph tags...");
+        console.log("\nChecking for Facebook Open Graph tags...");
         assert(window.$('meta[property="og:url"]').attr('content').length >= 1,
           'Page has og:url content');
         console.log(window.$('meta[property="og:url"]').attr('content'));
@@ -121,7 +113,7 @@ function inspect(urlList) {
         console.log(window.$('meta[property="og:image"]').attr('content'));
 
         // Google Tag Manager required.
-        console.log("Checking for Google Tag Manager script tags...");
+        console.log("\nChecking for Google Tag Manager script tags...");
         var gtmScript = window.$('head > script:contains("//www.googletagmanager.com/gtm.js?id=")');
         assert(gtmScript.length === 1,
           'Page has a Google Tag Manager <script> in the <head>');
@@ -141,14 +133,14 @@ function inspect(urlList) {
         // Log Assertions vs. Passed stats
         stats();
 
-        // Inspect the next URL.
-        inspectURL();
+        callback(err, window);
       }
     });
+  },
+  function(err, windows) {
+    endWithStatusCode();
   }
-
-  inspectURL();
-}
+);
 
 function validateHTML(url) {
   var results = w3cjs.validate({
@@ -181,12 +173,13 @@ var assertions = 0;
 var passed = 0;
 
 function assert(condition, message) {
+    console.log('\n');
     assertions++;
     if (condition) {
         passed++;
-        console.log('  ', colors.green(message));
+        console.log(colors.green(message));
     } else {
-        console.log(colors.red('  Fail: ' + message));
+        console.log(colors.red('ERROR: ' + message));
     }
 }
 
@@ -201,6 +194,7 @@ function stats() {
         console.log(colors.red('Passed:     ' + passed));
         failure = true;
     }
+    console.log('\n---\n');
 }
 
 function endWithStatusCode() {
