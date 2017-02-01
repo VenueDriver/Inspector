@@ -30,6 +30,8 @@ async.until(
 
     console.log("Inspecting URL: " + url + '\n');
 
+    validateHTML(url);
+
     jsdom.env({
       url: url,
       scripts: ['http://code.jquery.com/jquery.js'],
