@@ -1,6 +1,6 @@
 {
   "name": "hakkasan-inspector",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Automated verification tool for the Hakkasan Group's web technical requirements.",
   "main": "inspect.js",
   "dependencies": {

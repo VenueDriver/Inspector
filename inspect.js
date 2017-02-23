@@ -13,8 +13,7 @@ var failure = false;
 
 // Read in urls from website.yml and set urlList variable/array accordingly
 try {
-  // var websiteList = yaml.safeLoad(fs.readFileSync('website.yml', 'utf8'));     // yaml file with only 1 url
-  var websiteList = yaml.safeLoad(fs.readFileSync('website2.yml', 'utf8'));     // yaml file with multiple urls
+  var websiteList = yaml.safeLoad(fs.readFileSync('website.yml', 'utf8'));     // yaml file with only 1 url
   var urlList = websiteList.url;
   console.log("Scanning: " + urlList.join(", ") + "...\n");
 } catch (e) {
