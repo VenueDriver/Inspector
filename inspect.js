@@ -2,37 +2,78 @@
 // https://hakkasan.atlassian.net/wiki/display/ENG/SOP%3A+Web+Technical+Requirements
 
 var async = require("async");
-const jsdom = require('jsdom');
-const colors = require('colors');
-const w3cjs = require('w3cjs');
-const yaml = require('js-yaml');
-const fs = require('fs');
+var jsdom = require('jsdom');
+var colors = require('colors');
+var w3cjs = require('w3cjs');
+var yaml = require('js-yaml');
+var fs = require('fs');
 var util = require('util');
+var request = require("request");
+var cheerio = require("cheerio");
+var parseUrl = require("url-parse");
 
 var failure = false;
 
-// Read in urls from website.yml and set urlList variable/array accordingly
+// grab website url from yaml file
 try {
-  var websiteList = yaml.safeLoad(fs.readFileSync('website.yml', 'utf8'));     // yaml file with only 1 url
-  var urlList = websiteList.url;
-  console.log("Scanning: " + urlList.join(", ") + "...\n");
+  var website = yaml.safeLoad(fs.readFileSync('website.yml', 'utf8'));
+  var domain = website.url;
+  console.log("Scanning: " + domain.join(", ") + "...\n");
 } catch (e) {
   console.log(e);
 }
 
+// setting vars for crawler
+var START_URL = domain;
+var url = new parseUrl(domain);
+var crawledURLs = [];
+var pagesToInspect = [];
+var baseUrl = url.protocol + "//" + url.hostname
+
+// verify 'url' var holds correct value
+console.log("Inspecting page " + url);
+
+// request url
+request(url.toString(), function(error, response, body) {
+   if(error) {
+     console.log("Error: " + error);
+   }
+   // Check status code (200 is HTTP OK)
+   console.log("Status code: " + response.statusCode);
+   if(response.statusCode === 200) {
+     // Parse the document body
+     var $ = cheerio.load(body);
+     collectRelativeURLs($);
+   }
+});
+
+// crawl starting url for relative urls and shove them into pagesToInspect
+function collectRelativeURLs($) {
+  var relativeLinks = $("a[href^='/']");
+  relativeLinks.each(function() {
+      crawledURLs.push(baseUrl + $(this).attr('href'));
+  });
+  pagesToInspect = crawledURLs.filter(function(elem, pos) {
+    return crawledURLs.indexOf(elem) == pos;
+  });
+  console.log("Found " + pagesToInspect.length + " relative links:");
+  console.log(pagesToInspect);
+}
+
+
 async.until(
   function() {
-    return !urlList.length
+    return !pagesToInspect.length;
   },
   function(callback) {
-    var url = urlList.shift().toString();
+    var page = pagesToInspect.shift().toString();
 
-    console.log("Inspecting URL: " + url + '\n');
+    console.log("Inspecting URL: " + page + '\n');
 
-    validateHTML(url);
+    validateHTML(page);
 
     jsdom.env({
-      url: url,
+      url: page,
       scripts: ['http://code.jquery.com/jquery.js'],
       done: function (err, window) {
 
@@ -143,12 +184,12 @@ async.until(
   }
 );
 
-function validateHTML(url) {
+function validateHTML(page) {
   var results = w3cjs.validate({
-    file: url,
+    file: page,
     output: 'json', // Defaults to 'json', other option includes html
     callback: function(res) {
-      console.log("Beginning HTML Validation on " + url + "...");
+      console.log("Beginning HTML Validation on " + page + "...");
       var errors = 0;
       var warnings = 0;
       for (i=0; i < res.messages.length; i++) {

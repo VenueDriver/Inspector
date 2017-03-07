@@ -4,11 +4,15 @@
   "description": "Automated verification tool for the Hakkasan Group's web technical requirements.",
   "main": "inspect.js",
   "dependencies": {
+    "async": "^2.1.4",
+    "cheerio": "^0.22.0",
     "colors": "^1.1.2",
     "js-yaml": "^3.7.0",
     "jsdom": "9.5.0",
-    "w3cjs": "^0.3.0",
-    "async": "^2.1.4"
+    "request": "^2.79.0",
+    "simplecrawler": "^1.0.5",
+    "url-parse": "^1.1.8",
+    "w3cjs": "^0.3.0"
   },
   "scripts": {
     "test": "mocha"
