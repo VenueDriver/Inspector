@@ -89,13 +89,16 @@ function inspect() {
             return;
           }
 
-          // A non-zero length page title is required.
-          assert(window.$('title').length === 1,
-            'There is exactly 1 page title');
-          assert(window.document.title.length > 0,
+          // Page has a title meta tag with some content
+          var title = window.$('title');
+          assert(title,
+            'Page has a title meta tag');
+          if (title) {
+            assert(window.document.title.length > 0,
             'Page title is greater than 1 character');
-          console.log('<title> : ', window.document.title);
-
+            console.log('<title> : ', window.document.title);
+          }
+          
           // A non-zero length meta description is required.
           var description = window.$('meta[name="description"]').attr('content');
           assert((description.length > 0),
@@ -182,49 +185,49 @@ function inspect() {
           // Facebook Open Graph tags required.
           console.log("\nChecking for Facebook Open Graph tags...");
 
-          var ogUrl = window.$('meta[name="og:url"]').attr('content');
+          var ogUrl = window.$('meta[property="og:url"]').attr('content');
           assert(ogUrl,
             'Page has og:url meta tag');
           if (ogUrl) {
             assert(ogUrl.length >= 1,
             'og:url meta tag has content');
-            console.log(window.$('meta[name="og:url"]').attr('content'));
+            console.log(window.$('meta[property="og:url"]').attr('content'));
           }
 
-          var ogType = window.$('meta[name="og:type"]').attr('content');
+          var ogType = window.$('meta[property="og:type"]').attr('content');
           assert(ogType,
             'Page has og:type meta tag');
           if (ogType) {
             assert(ogType.length >= 1,
             'og:type meta tag has content');
-            console.log(window.$('meta[name="og:type"]').attr('content'));
+            console.log(window.$('meta[property="og:type"]').attr('content'));
           }
 
-          var ogTitle = window.$('meta[name="og:title"]').attr('content');
+          var ogTitle = window.$('meta[property="og:title"]').attr('content');
           assert(ogTitle,
             'Page has og:title meta tag');
           if (ogTitle) {
             assert(ogTitle.length >= 1,
             'og:title meta tag has content');
-            console.log(window.$('meta[name="og:title"]').attr('content'));
+            console.log(window.$('meta[property="og:title"]').attr('content'));
           }
 
-          var ogDescription = window.$('meta[name="og:description"]').attr('content');
+          var ogDescription = window.$('meta[property="og:description"]').attr('content');
           assert(ogDescription,
             'Page has og:description meta tag');
           if (ogDescription) {
             assert(ogDescription.length >= 1,
             'og:description meta tag has content');
-            console.log(window.$('meta[name="og:description"]').attr('content'));
+            console.log(window.$('meta[property="og:description"]').attr('content'));
           }
           
-          var ogImage = window.$('meta[name="og:image"]').attr('content');
+          var ogImage = window.$('meta[property="og:image"]').attr('content');
           assert(ogImage,
             'Page has og:image meta tag');
           if (ogImage) {
             assert(ogImage.length >= 1,
             'og:image meta tag has content');
-            console.log(window.$('meta[name="og:image"]').attr('content'));
+            console.log(window.$('meta[property="og:image"]').attr('content'));
           }
           
           // Google Tag Manager required.
