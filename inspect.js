@@ -58,6 +58,9 @@ function collectRelativeURLs($) {
     return crawledURLs.indexOf(elem) == pos;
   });
   console.log("Found " + pagesToInspect.length + " relative links:");
+  if (pagesToInspect.length === 0) {
+    pagesToInspect = START_URL;
+  }
   console.log(pagesToInspect);
 }
 
